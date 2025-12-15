@@ -52,11 +52,12 @@ bash build.sh -r 2024-A -n Mouse
 
 This section contains additional instructions if you wish to create a blacklist for ATAC, single-cell ATAC or Multiome (ATAC + Gene Expression) analysis.
 
-Following two sources are used:
+First two are the main sources used, with the third offers problematic genomic regions from more organisms and assemblies:
 
 1. ENCODE Blacklists (V2): https://github.com/Boyle-Lab/Blacklist
   - mm9 does not have a version 2 blacklist, hence version 1 is used instead
 2. Mitochondrial blacklists: https://github.com/caleblareau/mitoblacklist
+3. `excluderanges` R/Bioconductor package: https://bioconductor.org/packages/excluderanges
 
 ### hg19 (GRCh37)
 
@@ -65,8 +66,9 @@ wget -O hg19_peaks.narrowPeak "https://raw.githubusercontent.com/caleblareau/mit
 wget -O hg19-blacklist.v2.bed.gz "https://github.com/Boyle-Lab/Blacklist/raw/refs/heads/master/lists/hg19-blacklist.v2.bed.gz"
 gunzip hg19-blacklist.v2.bed.gz
 
-cat hg19-blacklist.v2.bed hg19_peaks.narrowPeak | awk '{print $1"\t"$2"\t"$3"\t"$4}' | sortBed | \
-        mergeBed -i stdin -d 10 -c 4 -o distinct > hg19.master.blacklist.bed
+cat hg19-blacklist.v2.bed hg19_peaks.narrowPeak | \
+    awk '{print $1"\t"$2"\t"$3"\t"$4}' | sortBed | \
+    mergeBed -i stdin -d 10 -c 4 -o distinct > hg19.master.blacklist.bed
 ```
 
 ### hg38 (GRCh38)
@@ -76,8 +78,9 @@ wget -O hg38_peaks.narrowPeak "https://raw.githubusercontent.com/caleblareau/mit
 wget -O hg38-blacklist.v2.bed.gz "https://github.com/Boyle-Lab/Blacklist/raw/refs/heads/master/lists/hg38-blacklist.v2.bed.gz"
 gunzip hg38-blacklist.v2.bed.gz
 
-cat hg38-blacklist.v2.bed hg38_peaks.narrowPeak | awk '{print $1"\t"$2"\t"$3"\t"$4}' | sortBed | \
-        mergeBed -i stdin -d 10 -c 4 -o distinct > hg38.master.blacklist.bed
+cat hg38-blacklist.v2.bed hg38_peaks.narrowPeak | \
+    awk '{print $1"\t"$2"\t"$3"\t"$4}' | sortBed | \
+    mergeBed -i stdin -d 10 -c 4 -o distinct > hg38.master.blacklist.bed
 ```
 
 ### mm9 (GRCm37)
@@ -87,8 +90,9 @@ wget -O mm9_peaks.narrowPeak "https://raw.githubusercontent.com/caleblareau/mito
 wget -O mm9-blacklist.bed.gz "https://github.com/Boyle-Lab/Blacklist/raw/refs/heads/master/lists/Blacklist_v1/mm9-blacklist.bed.gz"
 gunzip mm9-blacklist.bed.gz
 
-cat mm9-blacklist.bed | awk '{print $0"\tENCODE_v1"}' | cat - mm9_peaks.narrowPeak | awk '{print $1"\t"$2"\t"$3"\t"$4}' | sortBed | \
-        mergeBed -i stdin -d 10 -c 4 -o distinct > mm9.master.blacklist.bed
+cat mm9-blacklist.bed | awk '{print $0"\tENCODE_v1"}' | cat - mm9_peaks.narrowPeak | \
+    awk '{print $1"\t"$2"\t"$3"\t"$4}' | sortBed | \
+    mergeBed -i stdin -d 10 -c 4 -o distinct > mm9.master.blacklist.bed
 ```
 
 ### mm10 (GRCm38)
@@ -98,7 +102,12 @@ wget -O mm10_peaks.narrowPeak "https://raw.githubusercontent.com/caleblareau/mit
 wget -O mm10-blacklist.v2.bed.gz "https://github.com/Boyle-Lab/Blacklist/raw/refs/heads/master/lists/mm10-blacklist.v2.bed.gz"
 gunzip mm10-blacklist.v2.bed.gz
 
-cat mm10-blacklist.v2.bed mm10_peaks.narrowPeak | awk '{print $1"\t"$2"\t"$3"\t"$4}' | sortBed | \
-        mergeBed -i stdin -d 10 -c 4 -o distinct > mm10.master.blacklist.bed
+cat mm10-blacklist.v2.bed mm10_peaks.narrowPeak | \
+    awk '{print $1"\t"$2"\t"$3"\t"$4}' | sortBed | \
+    mergeBed -i stdin -d 10 -c 4 -o distinct > mm10.master.blacklist.bed
 ```
 
+### mm39 (GRCm39)
+
+The blacklisted regions for mm39 is available from the `excluderanges` R/Bioconductor package. 
+You may also download the data from authors' Google Drive [here](https://drive.google.com/drive/folders/1sF9m8Y3eZouTZ3IEEywjs2kfHOWFBSJT?usp=sharing).
