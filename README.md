@@ -4,7 +4,8 @@ This repository documents the bash and R scripts used to create the BSgenome R/B
 from reference genomes and annotation files used by the 10x Genomics to build its human and mouse references, 
 versions 2020-A and 2024-A, for Cell Ranger and Cell Ranger ARC.
 
-To download the BSgenome R/Bioconductor packages and TxDb objects, please follow the link to Zenodo here: https://zenodo.org/records/17937032
+To download the BSgenome R/Bioconductor packages and TxDb objects, 
+please follow the link to Zenodo here: https://doi.org/10.5281/zenodo.17937032
 
 ## Build your own files
 
