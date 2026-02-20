@@ -10,7 +10,7 @@ check_param <- function(args, param) {
     } else {
         msg <- paste0('Use to ', param, '"=" to give an input')
         if(param == "organism") msg <- paste(msg, ', e.g. organism="Homo sapiens"')
-        if(param == "assembly") msg <- paste(msg, ', e.g. assembly="GRCh38.p13,"')
+        if(param == "assembly") msg <- paste(msg, ', e.g. assembly="GRCh38.p13" or assembly="GRCh38" if GTF is sourced from Ensembl')
         if(param == "gtfFile") msg <- paste(msg, ', e.g. gtfFile="xxxxx..gtf.filtered"')
         if(param == "chromSize") msg <- paste(msg, ', e.g. chromSize="xxxxx.chrom.sizes"')
         stop(msg)
@@ -18,13 +18,33 @@ check_param <- function(args, param) {
 }
 
 create_txdb <- function(organism, assembly, gtfFile, chromSize) {
-    gtf_list <- strsplit(basename(gtfFile), "\\.")
-    gencode_ver <- if(gtf_list[[1]][1] == "gencode") gtf_list[[1]][2] else NA
-    if(is.na(gencode_ver)) stop("Unrecognised Gencode GTF version.")
+    gtf_vec <- strsplit(basename(gtfFile), "\\.")[[1]]
+
+    # If using Gencode GTF
+    if(gtf_vec[1] == "gencode") {
+        gtf_source <- "Gencode"
+        gtf_version <- gtf_vec[2]
+    } else {
+        # To store the index of the genome in the vector
+        idx <- NULL
+
+        # If using Ensembl GTF, find and use "genome" in place of assembly
+        # e.g. Homo_sapiens.GRCh38.115.chr.gtf.gz
+        idx <- match(assembly, gtf_vec)
+	if(is.null(idx)) stop("Unrecognised GTF source. Currently supports Gencode and Ensembl.")
+
+        # Check if value in the next index is a number (as in Ensembl GTF)
+        if(grepl("^[[:digit:]]+", gtf_vec[idx+1])) {
+            gtf_source <- "Ensembl"
+            gtf_version <- gtf_vec[idx+1]
+        } else {
+            stop("Unrecognised Ensembl version.")
+        }
+    }
 
     chrominfo <- read.table(chromSize, , col.names = c("chrom","length"))
     chrominfo$is_circular <- FALSE
-    chrominfo$is_circular[chrominfo$chr == "chrM"] <- TRUE
+    chrominfo$is_circular[chrominfo$chr %in% c("chrM","MT")] <- TRUE
 
     message(paste0("\nMaking TxDb from \"", gtfFile, "\""))
     txdb <- txdbmaker::makeTxDbFromGFF(file = gtfFile, 
@@ -40,7 +60,7 @@ create_txdb <- function(organism, assembly, gtfFile, chromSize) {
     } else {
         name <- sub(" ", "_", organism)
     }
-    sqlitefile <- sprintf("%s.%s.Gencode.%s.txdb.sqlite", name, assembly, gencode_ver)
+    sqlitefile <- sprintf("%s.%s.%s.%s.txdb.sqlite", name, assembly, gtf_source, gtf_version)
     message(paste0("\nSaving TxDb to \"", sqlitefile, "\""))
     AnnotationDbi::saveDb(txdb, file = sqlitefile)
 

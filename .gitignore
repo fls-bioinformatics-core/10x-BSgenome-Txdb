@@ -6,3 +6,6 @@
 
 # Blacklists folder
 /blacklists/
+
+# Custom genome folder
+/custom/
